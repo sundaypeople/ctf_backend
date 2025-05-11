@@ -21,6 +21,7 @@ type QuesionHander interface {
 	DeleteVM(c echo.Context) error
 	GetQuesionIp(c echo.Context) error
 	UpdateQuestion(c echo.Context) error
+	ToTemplate(c echo.Context) error
 }
 
 type quesionHander struct {
@@ -237,26 +238,26 @@ func (h *quesionHander) GetQuesionByID(c echo.Context) error {
 }
 
 func (h *quesionHander) DeleteVM(c echo.Context) error {
-	// var req quesionRequest
-	// if err := c.Bind(&req); err != nil {
-	// 	wrappedErr := xerrors.Errorf(": %w", err)
-	// 	log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
-	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
-	// }
-	// // データをバリデーションにかける
-	// if err := c.Validate(req); err != nil {
-	// 	wrappedErr := xerrors.Errorf(": %w", err)
-	// 	log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
-	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
-	// }
-	sid := c.QueryParam("questionID")
-	id, err := strconv.Atoi(sid)
-	if err != nil {
+	var req quesionRequest
+	if err := c.Bind(&req); err != nil {
 		wrappedErr := xerrors.Errorf(": %w", err)
 		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
 	}
-	if err := h.serv.DeleteVM(id); err != nil {
+	// データをバリデーションにかける
+	if err := c.Validate(req); err != nil {
+		wrappedErr := xerrors.Errorf(": %w", err)
+		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	}
+	// sid := c.QueryParam("questionID")
+	// id, err := strconv.Atoi(sid)
+	// if err != nil {
+	// 	wrappedErr := xerrors.Errorf(": %w", err)
+	// 	log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	// }
+	if err := h.serv.DeleteVM(req.ID); err != nil {
 		wrappedErr := xerrors.Errorf(": %w", err)
 		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
@@ -315,4 +316,40 @@ func (h *quesionHander) UpdateQuestion(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
 	}
 	return c.JSON(http.StatusAccepted, map[string]string{"message": "success update question"})
+}
+
+func (h *quesionHander) ToTemplate(c echo.Context) error {
+	// var req quesionRequest
+	// if err := c.Bind(&req); err != nil {
+	// 	wrappedErr := xerrors.Errorf(": %w", err)
+	// 	log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	// }
+	sid := c.Param("questionID")
+	id, err := strconv.Atoi(sid)
+	if err != nil {
+		wrappedErr := xerrors.Errorf(": %w", err)
+		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	}
+	svid := c.Param("vmid")
+	vmid, err := strconv.Atoi(svid)
+	if err != nil {
+		wrappedErr := xerrors.Errorf(": %w", err)
+		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	}
+	// データをバリデーションにかける
+	// if err := c.Validate(req); err != nil {
+	// 	wrappedErr := xerrors.Errorf(": %w", err)
+	// 	log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+	// 	return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	// }
+
+	if err := h.serv.Template(id, vmid); err != nil {
+		wrappedErr := xerrors.Errorf(": %w", err)
+		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+	}
+	return c.JSON(http.StatusAccepted, map[string]string{"data": "success"})
 }

@@ -29,6 +29,7 @@ type ContestService interface {
 	GetCloudinit(cid, tid, qid int) (*model.Cloudinit, error)
 	GetClusterResource() ([]model.ClusterResources, error)
 	AllDeleteVM() error
+	ListQuestionsByContestIDAdmin(cid int) (*model.Contest, error)
 }
 
 type contestService struct {
@@ -203,7 +204,7 @@ func (r *contestService) StopContest(cid int) error {
 
 	for _, c := range cloudinit {
 		if err = r.quesRepo.DeleteVM(c.VMID); err != nil {
-			// return errors.Wrap(err, "can't get ListQuestions")
+			return errors.Wrap(err, "can't get ListQuestions")
 		}
 		cloudinit := model.Cloudinit{
 			QuestionID: c.QuestionID,
@@ -382,6 +383,15 @@ func (s *contestService) ListQuestionsByContestID(cid int, tid int) (*model.Cont
 		// contests.Questions[i].IPs = *ips
 		// fmt.Println(ips)
 
+	}
+	fmt.Printf("conntest:%+v", contests)
+	return &contests, nil
+}
+
+func (s *contestService) ListQuestionsByContestIDAdmin(cid int) (*model.Contest, error) {
+	contests, err := s.mysqlRepo.SelectContestQuestionsByContestID(cid)
+	if err != nil {
+		return nil, errors.Wrap(err, "get questions")
 	}
 	fmt.Printf("%+v", contests)
 	return &contests, nil

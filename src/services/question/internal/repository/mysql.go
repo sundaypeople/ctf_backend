@@ -19,6 +19,7 @@ type MysqlRepository interface {
 	SelectContestQuestions() ([]model.Question, error)
 	SelectQuesionByQuestionID(qid int) (model.Question, error)
 	UpdateQuestion(q model.Question) error
+	UpdateQuestionEnv(e string, vmid int) error
 }
 
 func NewMysqlRepository(db *sql.DB) MysqlRepository {
@@ -67,6 +68,21 @@ func (m *mysqlRepository) UpdateQuestion(q model.Question) error {
 	defer ins.Close()
 
 	_, err = ins.Exec(q.Name, q.Answer, q.Description, q.ID)
+	if err != nil {
+		return errors.Wrap(err, "can't insert contest_questions")
+	}
+	return nil
+}
+func (m *mysqlRepository) UpdateQuestionEnv(e string, vmid int) error {
+	// emailが登録されているかチェック
+	// この関数は暫定的な処置　後で消す
+	ins, err := m.DB.Prepare("UPDATE questions SET env = ? WHERE id =?")
+	if err != nil {
+		return errors.Wrap(err, "contest_teams insert error")
+	}
+	defer ins.Close()
+
+	_, err = ins.Exec(e, vmid)
 	if err != nil {
 		return errors.Wrap(err, "can't insert contest_questions")
 	}
@@ -159,7 +175,7 @@ func (m *mysqlRepository) SelectContestQuestions() ([]model.Question, error) {
 	var questions []model.Question
 	//  emailよりユーザ情報を取得
 	// rows, err := m.DB.Query("SELECT id,name,category_id,description,vmid FROM questions WEHERE id = ?", contestID)
-	rows, err := m.DB.Query("SELECT q.id,q.name,c.id,c.name,q.description,q.vmid,q.answer FROM questions as q JOIN category AS c ON c.id = q.category_id")
+	rows, err := m.DB.Query("SELECT q.id,q.name,c.id,c.name,q.description,q.vmid,q.answer,q.env FROM questions as q JOIN category AS c ON c.id = q.category_id")
 	if err != nil {
 		return nil, errors.Wrap(err, "error select contest")
 	}
@@ -167,7 +183,7 @@ func (m *mysqlRepository) SelectContestQuestions() ([]model.Question, error) {
 	for rows.Next() {
 		q := model.Question{}
 		var Ans sql.NullString
-		if err := rows.Scan(&q.ID, &q.Name, &q.CategoryId, &q.CategoryName, &q.Description, &q.VMID, &Ans); err != nil {
+		if err := rows.Scan(&q.ID, &q.Name, &q.CategoryId, &q.CategoryName, &q.Description, &q.VMID, &Ans, &q.Env); err != nil {
 			return nil, errors.Wrap(err, "failed to scan row")
 		}
 		if Ans.Valid {

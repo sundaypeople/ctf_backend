@@ -216,7 +216,6 @@ func (t *teamHander) ListTeamUserByContest(c echo.Context) error {
 		}
 	}
 
-	fmt.Printf("%+v", teams[0])
 	return c.JSON(http.StatusOK, teams)
 }
 

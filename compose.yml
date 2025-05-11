@@ -3,33 +3,46 @@ services:
   authn:
     build: 
       context: src/services/authn
+      target: dev
     tty: true
     volumes:
-      - ./src/services/authn:/go/src/authn
-      - ./src/shared:/go/src/authn/shared
+      - ./src/services/authn:/app
+      - ./src/shared:/app/shared
     ports:
       - 8000:8000
+    environment:
+      REDIS_IP: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: user
   authz:
     build: 
       context: src/services/authz
+      target: dev
     tty: true
     volumes:
       - ./src/services/authz:/go/src/authz
-      - ./src/shared:/go/src/authz/shared
+      - ./src/shared:/go/src/authz/
     ports:
       - 8006:8000
   gateway:
     build: 
       context: src/services/gateway
+      target: dev
     tty: true
     volumes:
       - ./src/services/gateway:/go/src/gateway
       - ./src/shared:/go/src/gateway/shared
     ports:
       - 8002:8000
+    environment:
+      REDIS_IP: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: user
+
   pveapi:
     build: 
       context: src/services/pveapi
+      target: dev
     tty: true
     volumes:
       - ./src/services/pveapi:/go/src/pveapi
@@ -37,9 +50,14 @@ services:
       - ~/.ssh/id_ed25519:/ssh/id_ed25519
     ports:
       - 8001:8000
+    environment:
+      PROXMOX_API_URL: https://10.1.10.30:8006/api2/json
+      PROXMOX_API_TOKEN: ctf_dev@pam!ctf_dev=f35db674-1d85-4f99-b8dc-1e9cecadaeea
+      CLOUDINIT_FILESERVER_IP: 10.1.10.30
   contest:
     build: 
       context: src/services/contest
+      target: dev
     tty: true
     volumes:
       - ./src/services/contest:/go/src/contest
@@ -48,7 +66,8 @@ services:
       - 8003:8000
   team:
     build: 
-      context: src/services/team
+      context: src/services/team      
+      target: dev
     tty: true
     volumes:
       - ./src/services/team:/go/src/team
@@ -58,6 +77,7 @@ services:
   question:
     build: 
       context: src/services/question
+      target: dev
     tty: true
     volumes:
       - ./src/services/question:/go/src/question
@@ -73,7 +93,7 @@ services:
       - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./mysql/sample.sql:/docker-entrypoint-initdb.d/sample.sql
-
+      - ./mysql/product.sql:/docker-entrypoint-initdb.d/product.sql
     environment:
       - MYSQL_DATABASE=ctf
       - MYSQL_USER=user
@@ -89,17 +109,17 @@ services:
     volumes:
       - "./redis/data:/data"
       - "./redis/redis.conf:/usr/local/etc/redis/redis.conf"
-  nfs:
-    build: 
-      context: nfs
-    privileged: true
-    ports:
-      - "2049:2049"    # NFS データポート
-      - "20048:20048"  # NFS マウントポート    
-    volumes:
-      - nfs-data:/share
-      - "./nfs/exports:/etc/exports"
-    tty: true
+  # nfs:
+  #   build: 
+  #     context: nfs
+  #   privileged: true
+  #   ports:
+  #     - "2049:2049"    # NFS データポート
+  #     - "20048:20048"  # NFS マウントポート    
+  #   volumes:
+  #     - nfs-data:/share
+  #     - "./nfs/exports:/etc/exports"
+  #   tty: true
   traefik:
     image: traefik:v3.2
     ports:
@@ -116,8 +136,6 @@ services:
   #   image: traefik/whoami
   #   labels:
   #     - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
-
-
 volumes:
   nfs-data:
     name: "nfs-data"

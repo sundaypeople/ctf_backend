@@ -161,6 +161,20 @@ func (p *pveService) fiveEditVM(conf *model.VMEdit) error {
 	}
 	return nil
 }
+func (p *pveService) fiveTemplateVM(node string, vmid int) error {
+	for i := 0; i < 5; i++ {
+		time.Sleep(5 * time.Second)
+		if err := p.pveRepo.Template(node, vmid); err != nil {
+			fmt.Println(i)
+			if i > 3 {
+				return errors.Wrap(err, "can't error")
+			}
+		} else {
+			break
+		}
+	}
+	return nil
+}
 
 func (p *pveService) fiveDeleteVM(conf *model.VMDelete) error {
 	for i := 0; i < 5; i++ {
@@ -198,7 +212,7 @@ func (p *pveService) DeleteVMByVmid(vmid int) error {
 		Vmid: vmid,
 		Node: n,
 	}
-
+	fmt.Println("vmid", conf.Vmid, "node", n)
 	if err := p.pveRepo.Shutdown(n, vmid); err != nil {
 		return err
 	}
@@ -234,14 +248,17 @@ func (p *pveService) DeleteCloudinitFile(fname string) error {
 }
 
 func (p *pveService) Template(vmid int) error {
+	fmt.Println("template: ", vmid)
 	node, err := p.SearchNodeByVmid(vmid)
+
 	if err != nil {
 		return errors.Wrap(err, "can't found err")
 	}
 	if err := p.pveRepo.Shutdown(node, vmid); err != nil {
 		return errors.Wrap(err, "can't stop vm")
 	}
-	if err := p.pveRepo.Template(node, vmid); err != nil {
+
+	if err := p.fiveTemplateVM(node, vmid); err != nil {
 		return errors.Wrap(err, "can't to template")
 	}
 	return nil

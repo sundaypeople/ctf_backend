@@ -21,7 +21,14 @@ import (
 	echoLog "github.com/labstack/gommon/log" // エイリアスを付ける
 )
 
+type RedisConfig struct {
+	IP       string `env:"REDIS_IP"`
+	Port     string `env:"REDIS_PORT"`
+	Password string `env:"REDIS_PASSWORD"`
+}
+
 func main() {
+
 	reddb, err := repository.NewRedis()
 	if err != nil {
 		xerrors.Errorf("redis connetciono error: %w", err.Error())

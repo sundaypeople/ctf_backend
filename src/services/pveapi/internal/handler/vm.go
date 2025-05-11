@@ -133,9 +133,10 @@ func (h *PVEHandler) CreateCloudinitVM(c echo.Context) error {
 	conf := &model.VMEdit{}
 	if req.IP == "" {
 		conf = &model.VMEdit{
-			Memory:   req.Memory,
-			Cores:    req.CPUs,
-			Node:     node,
+			Memory: req.Memory,
+			Cores:  req.CPUs,
+			Node:   node,
+			// ついか
 			Ipconfig: []string{"ip=dhcp"},
 			Cicustom: req.Cicustom,
 		}
@@ -272,7 +273,6 @@ func (h *PVEHandler) ToTemplate(c echo.Context) error {
 		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
 	}
-
 	if err := h.serv.Template(req.ID); err != nil {
 		wrappedErr := xerrors.Errorf(": %w", err)
 		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力

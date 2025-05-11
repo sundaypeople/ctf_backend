@@ -82,6 +82,11 @@ func (r *pveRepository) TransferFileViaSCP(fname string) error {
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "failed scp")
 	}
+
+	if err := DeleteLocalfile(fname); err != nil {
+		return errors.Wrap(err, "failed delete localfile")
+
+	}
 	return nil
 }
 
@@ -111,6 +116,14 @@ func (r *pveRepository) DeleteFile(fname string) error {
 	// コマンドの実行
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "failed to delete remote file via ssh")
+	}
+	return nil
+}
+
+func DeleteLocalfile(filename string) error {
+	err := os.Remove(filename)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove local file")
 	}
 	return nil
 }

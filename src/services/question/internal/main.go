@@ -211,6 +211,8 @@ func main() {
 	e.GET("/question", h.GetQuestions)
 
 	e.POST("/question/clone", h.CloneQuestion)
+	e.POST("/question/:questionID/template/:vmid", h.ToTemplate)
+
 	e.DELETE("/question/clone", h.DeleteVM)
 
 	e.GET("/question/ip/:vmid", h.GetQuesionIp)

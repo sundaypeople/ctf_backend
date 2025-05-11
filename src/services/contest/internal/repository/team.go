@@ -66,7 +66,7 @@ func (r *teamRepository) ListTeamUsersByContest(cid int, uid *int) ([]model.Team
 	}
 
 	// クローン作成のUPIDを表示
-	log.Printf("VM クローンの作成が開始されました。UPID: %v\n", teams)
+	log.Printf("teams infomation: %v\n", teams)
 
 	return teams, nil
 }

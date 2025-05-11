@@ -190,7 +190,6 @@ func main() {
 	e.POST("/team", h.CreateTeam)
 	e.DELETE("/team/:teamID", h.DeleteTeam)
 	e.GET("/team/:contestID/user", h.ListTeamUserByContest)
-
 	e.PUT("/team/:teamID", h.EditTeam)
 
 	// e.POST("/team_contests", h.JoinTeamsinContest)

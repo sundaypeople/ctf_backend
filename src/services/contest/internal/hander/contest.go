@@ -10,6 +10,7 @@ import (
 	"github.com/LainInTheWired/ctf_backend/contest/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	"github.com/pkg/errors"
 	"golang.org/x/xerrors"
 )
 
@@ -472,6 +473,7 @@ func (h *contestHander) CheckAnswer(c echo.Context) error {
 
 func (h *contestHander) ListQuestionsByContestID(c echo.Context) error {
 	suid := c.Request().Header.Get("X-User-ID")
+	fmt.Println(suid)
 	uid, err := strconv.Atoi(suid)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
@@ -484,15 +486,31 @@ func (h *contestHander) ListQuestionsByContestID(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error: param")})
 	}
+	//  adminやった場合
+	if uid == 1 {
+		ques, err := h.serv.ListQuestionsByContestIDAdmin(cid)
+		if err != nil {
+			wrappedErr := xerrors.Errorf(": %w", err)
+			log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
+
+		}
+		return c.JSON(http.StatusOK, ques)
+	}
 	teams, err := h.serv.GetTeamByUserID(cid, uid)
 	if err != nil {
 		wrappedErr := xerrors.Errorf(": %w", err)
 		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error:", wrappedErr)})
 	}
+	fmt.Printf("%+v", teams)
+
 	if len(teams) == 0 {
+		wrappedErr := errors.Wrap(err, "request bind error")
+		log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
 		return c.JSON(http.StatusForbidden, map[string]string{"message": "not join team"})
 	}
+
 	fmt.Printf("%+v", teams)
 	points, err := h.serv.ListQuestionsByContestID(cid, teams[0].ID)
 	if err != nil {
@@ -517,6 +535,8 @@ func (h *contestHander) GetCloudinit(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("error: param")})
 	}
 	suid := c.Request().Header.Get("X-User-ID")
+	fmt.Println(c.Request().Header)
+
 	uid, err := strconv.Atoi(suid)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{

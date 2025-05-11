@@ -52,6 +52,8 @@ func (h *GatewayHandler) Authz(c echo.Context) error {
 			fmt.Print("fewa")
 			for _, r := range rs {
 				if r.ID != 1 {
+					wrappedErr := errors.Wrap(err, "request bind error")
+					log.Errorf("\n%+v\n", wrappedErr) // スタックトレース付きでログに出力
 					return c.JSON(http.StatusForbidden, map[string]string{"message": "success bind user roles"})
 				}
 			}
@@ -59,6 +61,7 @@ func (h *GatewayHandler) Authz(c echo.Context) error {
 	}
 
 	c.Response().Header().Set("X-User-ID", strconv.Itoa(u))
+	fmt.Println("X-User-ID", strconv.Itoa(u))
 
 	return c.JSON(http.StatusCreated, map[string]string{"message": "success bind user roles"})
 }

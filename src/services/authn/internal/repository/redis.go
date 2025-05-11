@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -10,9 +11,18 @@ import (
 )
 
 func NewRedis() (*redis.Client, error) {
+	rconf := struct {
+		IP       string
+		Port     string
+		Password string
+	}{
+		IP:       os.Getenv("REDIS_IP"),
+		Port:     os.Getenv("REDIS_PORT"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+	}
 	client := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: "user",
+		Addr:     rconf.IP + ":" + rconf.Port,
+		Password: rconf.Password,
 		DB:       0,
 	})
 	// 接続確認

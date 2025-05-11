@@ -102,3 +102,10 @@ INSERT INTO points (team_id, question_id, contest_id,point) VALUES
 (2, 3, 1,150), -- Beta Team が Web Challenge 1 を解決
 (3, 2, 2,120), -- Gamma Team が Reverse Engineering 1 を解決
 (1, 4, 2,130); -- Alpha Team が Forensics 1 を解決
+
+
+INSERT INTO category (name) VALUES
+('Crypto'),
+('Reverse Engineering'),
+('Web'),
+('Forensics');

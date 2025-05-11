@@ -25,6 +25,7 @@ type QuesionService interface {
 	DeleteVM(vmid int) error
 	GetQuesionIp(vmid int) (*model.ResponseIPs, error)
 	UpdateQuestion(q model.Question) error
+	Template(id, vmid int) error
 }
 
 func NewQuestionService(r repository.MysqlRepository, p repository.PVEAPIRepository, t repository.TeamRepository) QuesionService {
@@ -87,8 +88,14 @@ func (s *quesionService) CreateQuestion(q model.CreateQuestion) error {
 	return nil
 }
 
-func (s *quesionService) Template(vmid int) {
-
+func (s *quesionService) Template(id, vmid int) error {
+	if err := s.pveapirepo.Template(vmid); err != nil {
+		return errors.Wrap(err, "can't to template")
+	}
+	if err := s.myrepo.UpdateQuestionEnv("true", id); err != nil {
+		return errors.Wrap(err, "can't to template")
+	}
+	return nil
 }
 
 func (s *quesionService) DeleteQuestion(qid int) error {
@@ -107,6 +114,7 @@ func (s *quesionService) DeleteQuestion(qid int) error {
 }
 
 func (s *quesionService) DeleteVM(vmid int) error {
+	fmt.Println("vmid", vmid)
 	if err := s.pveapirepo.DeleteVM(vmid); err != nil {
 		return errors.Wrap(err, "can't Delete vm")
 	}

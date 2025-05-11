@@ -157,11 +157,7 @@ CREATE TABLE user_roles (
     PRIMARY KEY (role_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO category (name) VALUES
-('Crypto'),
-('Reverse Engineering'),
-('Web'),
-('Forensics');
+
 
 -- -- 7. contests テーブルへの挿入
 -- INSERT INTO contests (name, start, end) VALUES

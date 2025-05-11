@@ -22,6 +22,7 @@ type PVEAPIRepository interface {
 	CreateVM(conf *model.CreateVM) (string, error)
 	DeleteVM(vmid int) error
 	GetIPByVMID(vmid int) (*model.ResponseIPs, error)
+	Template(vmid int) error
 }
 
 func NewPVEAPIRepository(h *http.Client, url string) PVEAPIRepository {
@@ -200,4 +201,49 @@ func (r *pveapiRepository) GetIPByVMID(vmid int) (*model.ResponseIPs, error) {
 		return nil, errors.Errorf("API Error: status code %d, response: %s", resp.StatusCode, resp.Status)
 	}
 	return &ifs, nil
+}
+
+func (r *pveapiRepository) Template(vmid int) error {
+	// フォームデータの作成
+	endpoint := fmt.Sprintf("http://%s:8000/template", r.URL)
+	// フォームデータの作成
+
+	jsend, err := json.Marshal(map[string]int{"id": vmid})
+	if err != nil {
+		return errors.Wrap(err, "can't change json")
+	}
+
+	// 新しいPOSTリクエストの作成
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsend))
+	if err != nil {
+		return xerrors.Errorf("can't create http request: %w", err)
+	}
+
+	// ヘッダーの設定
+	req.Header.Set("Content-Type", "application/json")
+
+	// リクエストの送信
+	resp, err := r.HTTPClient.Do(req)
+	if err != nil {
+		return xerrors.Errorf("fail http request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// レスポンスの読み取り
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Error reading clone response body: %v", err)
+	}
+
+	// json.Unmarshalでデコード
+	var pveresp model.PveapiResponse[string]
+	if err := json.Unmarshal(body, &pveresp); err != nil {
+		return xerrors.Errorf("can't unmarshal response body: %w", err)
+	}
+
+	// エラーチェック
+	if resp.StatusCode >= 400 {
+		return xerrors.Errorf("API Error: status code %d, response: %s", resp.StatusCode, resp.Status)
+	}
+	return nil
 }
